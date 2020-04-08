@@ -6,6 +6,7 @@ Yes, amid COVID-19 trying to get Amazon Prime Now delivery slots can get cumbers
 Features
 
 --- notify via speech 'say' command.
+
 --- notify via pushbullet.com notifications  (pushbullet can go to SMS, desktop, etc...)
 
 ## Usage:
