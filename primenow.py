@@ -4,10 +4,12 @@ import bs4
 import time
 import platform
 import sys
+import os
+import argparse
 
 settings = {
     "debug": False,
-    "log_severity": cef.LOGSEVERITY_INFO,
+    "log_severity": cef.LOGSEVERITY_ERROR,
     "log_file": "debug.log"
 }
 
@@ -17,7 +19,8 @@ options = {
 }
 
 browser = None
-
+notifications = []
+pushbullet_api_key = None
 BASE_URL = "https://primenow.amazon.com/"
 CART_URL = "https://primenow.amazon.com/cart"
 CHECKOUT_URL = "https://primenow.amazon.com/checkout/enter-checkout"
@@ -55,18 +58,29 @@ class ParseCheckoutVisitor(object):
 checkoutvisitor = ParseCheckoutVisitor()
 
 
+def speakNotification():
+    os.system('say "Slots for delivery opened"')
+
+
+def pushBulletNotification():
+    from pushbullet import Pushbullet
+    print("pushing with key: %s" % pushbullet_api_key)
+    pb = Pushbullet(pushbullet_api_key)
+    push = pb.push_note("Prime Now Slots Open!", "Prime Now Delivery Slots have opened!")
+
+
 class TimeSlotVisitor(object):
     def Visit(self, value):
         no_slot_pattern = 'No delivery windows available'
         if no_slot_pattern in value:
             print("NO SLOTS! Sleep a bit, then reloadPage... ")
-            time.sleep(30)
-            browser.Reload()
         else:
             print('SLOTS OPEN!')
-            while 1:
-                os.system('say "Slots for delivery opened"')
-                time.sleep(30)
+            for notification in notifications:
+                notification()
+
+        time.sleep(30)
+        browser.Reload()
 
 timeslotvisitor = TimeSlotVisitor()
 
@@ -103,7 +117,31 @@ class LoadHandler(object):
 
 
 def main():
+    global pushbullet_api_key
     global browser
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--enable-say', action='store_true', help='Enable speech notiifcations')
+    parser.add_argument('-p', '--enable-pushbullet', action='store_true', help='Enable pushbullet notiifcations')
+    parser.add_argument('-k', '--pushbullet_key', help='Pushbullet API Key')
+    parser.add_argument('-u', '--username', help='Amazon Username (optional for autocomplete)')
+
+    parsed_args = parser.parse_args()
+
+    if parsed_args.pushbullet_key:
+        pushbullet_api_key = parsed_args.pushbullet_key
+
+    if parsed_args.enable_pushbullet:
+        if not pushbullet_api_key:
+            print("ERROR: Must set a valid PUSHBULLET_API_KEY via -k or hardcode into the script.")
+            exit(1)
+        notifications.append(pushBulletNotification)
+
+    if parsed_args.enable_say:
+        notifications.append(speakNotification)
+
+    if parsed_args.username:
+        options['username'] = parsed_args.username
+
     check_versions()
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     cef.Initialize(settings=settings)
