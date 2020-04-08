@@ -40,7 +40,6 @@ def set_client_handlers(browser):
 
 class ParseCheckoutVisitor(object):
     def Visit(self, value):
-        print(value)
         soup = bs4.BeautifulSoup(value, features="html.parser")
         try:
             link = soup.find('span', class_='cart-checkout-button').find("a")
@@ -64,7 +63,6 @@ def speakNotification():
 
 def pushBulletNotification():
     from pushbullet import Pushbullet
-    print("pushing with key: %s" % pushbullet_api_key)
     pb = Pushbullet(pushbullet_api_key)
     push = pb.push_note("Prime Now Slots Open!", "Prime Now Delivery Slots have opened!")
 
@@ -91,11 +89,9 @@ class LoadHandler(object):
         # (is_loading=True) and second time when loading ends
         # (is_loading=False).
         if not is_loading:
-            print("Load complete!")
-
             url = browser.GetUrl()
 
-            print("url: {}".format(url))
+            print("At url: {}".format(url))
             if url == BASE_URL:
                 print("Main page, Attempting to nav to Cart...")
                 browser.ExecuteJavascript("window.location.href = '{}'".format(CART_URL))
