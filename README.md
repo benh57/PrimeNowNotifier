@@ -7,6 +7,8 @@ Features
 
 --- notify via speech 'say' command.
 
+--- notify to IFTTT Maker 'webhook' channel which can trigger any sort of automation you like.
+
 --- notify via pushbullet.com notifications  (pushbullet can go to SMS, desktop, etc...)
 
 ## Usage:
@@ -28,8 +30,10 @@ optional: install pushbullet for pushbullet support: pip install pushbullet.py
 	(``` $ python primenow.py --enable-say --username=<your-amazon-email>```)
 	or with Pushbullet support:
 	(``` $ python primenow.py --enable-say --enable-pushbullet -k=<pushbullet api key> --username=<your-amazon-email>```)
+	or with IFTTT/webhook support:
+	(``` $ python primenow.py -w=https://maker.ifttt.com/trigger/primenow/with/key/<apikey> --username=<your-amazon-email>```)
 
-4. When run this script, a chrome will pop up and Amazon will ask you to login. 
+4. When you run this script, Chrome will pop up and Amazon will ask you to login. 
 5. Log in, and enter OTP if prompted.
 6. Script should navigate you to the 'checkout' page automatically and refresh every 30 seconds, looking for slots.
 
