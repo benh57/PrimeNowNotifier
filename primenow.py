@@ -21,6 +21,16 @@ options = {
 browser = None
 notifications = []
 pushbullet_api_key = None
+
+# Webhook example for IFTTT maker channel
+# If <Webhook> then <anything>...
+# Create if 'webhook' event triggered with 'event' trigger 'primenow'
+#
+# Get your webhook url from the webhook channel settings, example:
+#    https://maker.ifttt.com/trigger/primenow/with/key/<webhookkey>
+#
+webhook_url = None
+
 BASE_URL = "https://primenow.amazon.com/"
 CART_URL = "https://primenow.amazon.com/cart"
 CHECKOUT_URL = "https://primenow.amazon.com/checkout/enter-checkout"
@@ -55,6 +65,19 @@ class ParseCheckoutVisitor(object):
                 print('Could not find checkout button!')
 
 checkoutvisitor = ParseCheckoutVisitor()
+
+
+def webhookNotification():
+    import requests
+    response = requests.post(
+        webhook_url, data={},
+        headers={'Content-Type': 'application/json'}
+    )
+    if response.status_code != 200:
+        raise ValueError(
+            'Webhook request returned an error %s, the response is:\n%s'
+            % (response.status_code, response.text)
+        )
 
 
 def speakNotification():
@@ -96,7 +119,7 @@ class LoadHandler(object):
                 print("Main page, Attempting to nav to Cart...")
                 browser.ExecuteJavascript("window.location.href = '{}'".format(CART_URL))
             elif url.startswith("https://primenow.amazon.com/ap/signin"):
-                print("Signin page, Attempting to sign in...")
+                print("Signin page, Please sign in...")
                 browser.ExecuteJavascript("document.getElementById('ap_email').value = '{}'".format(options["username"]))
                 browser.ExecuteJavascript("document.getElementById('ap_password').value = '{}'".format(options["password"]))
                 #browser.ExecuteJavascript("document.signIn.submit()")
@@ -116,6 +139,7 @@ def main():
     global pushbullet_api_key
     global browser
     parser = argparse.ArgumentParser()
+    parser.add_argument('-w', '--webhook-url', help='Enable webhook notiifcations to specified url')
     parser.add_argument('-s', '--enable-say', action='store_true', help='Enable speech notiifcations')
     parser.add_argument('-p', '--enable-pushbullet', action='store_true', help='Enable pushbullet notiifcations')
     parser.add_argument('-k', '--pushbullet_key', help='Pushbullet API Key')
@@ -126,14 +150,23 @@ def main():
     if parsed_args.pushbullet_key:
         pushbullet_api_key = parsed_args.pushbullet_key
 
+    if parsed_args.webhook_url:
+        webhook_url = parsed_args.webhook_url      
+
     if parsed_args.enable_pushbullet:
         if not pushbullet_api_key:
             print("ERROR: Must set a valid PUSHBULLET_API_KEY via -k or hardcode into the script.")
             exit(1)
+        print("PushBullet support enabled.")
         notifications.append(pushBulletNotification)
 
     if parsed_args.enable_say:
+        print("Speech support enabled.")
         notifications.append(speakNotification)
+
+    if webhook_url:
+        print("Webhook support enabled.")
+        notifications.append(webhookNotification)
 
     if parsed_args.username:
         options['username'] = parsed_args.username
