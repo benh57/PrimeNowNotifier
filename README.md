@@ -1,4 +1,4 @@
-# Amazon Primt Now Automated Slot Check Script
+# Amazon Prime Now Automated Slot Check Script
 
 Yes, amid COVID-19 trying to get Amazon Prime Now delivery slots can get cumbersome. To free you of the constant hassle of checking for slots (and almost never finding one), this automated script can notify you of when new delivery slots open.
 
