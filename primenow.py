@@ -164,7 +164,7 @@ def main():
         print("Speech support enabled.")
         notifications.append(speakNotification)
 
-    if webhook_url:
+    if parsed_args.webhook_url:
         print("Webhook support enabled.")
         notifications.append(webhookNotification)
 
